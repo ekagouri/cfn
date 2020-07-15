@@ -1,0 +1,189 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: SWP Security Groups template
+
+Metadata:
+  Comment: "
+    List of mandatory tags to set in the stack creation wizard:
+      - Env:
+          Description: The environment this component is being deployed
+          Type: String
+          Default: 'prod'
+      - Appname:
+          Description: The name for your application
+          Type: String
+          Default: 'swp'
+      - Appid:
+          Description: The unique number assigned to your app during assessment
+          Type: String
+          Default: '237729'
+      - Owner:
+          Description: Email address of Owner or Email Distribution list
+          Type: String
+          Default: 'ECEMEA.SHS.SWP.AWS.Support@baxter.com'
+      - Costcenter:
+          Description: Cost Center Number of your project
+          Type: String
+          Default: '815960632'
+  "
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      -
+        Label:
+          default: "Stack Configuration"
+        Parameters:
+          - Env
+          - SubEnv
+          - Appname
+          - VpcID
+
+Parameters:
+  Env:
+    Description: The environment this component is being deployed
+    Type: String
+    Default: prod
+  SubEnv:
+    Description: The sub environment/account this component is being deployed
+    Type: String
+    Default: entplat
+  Appname:
+    Description: The name for your App Platform
+    Type: String
+    Default: swp
+    AllowedPattern: ^[a-z0-9\\-]*$
+  SubAppname:
+    Description: The name for your application
+    Type: String
+    Default: atlas
+    AllowedPattern: ^[a-z0-9\\-]*$
+  VpcID:
+    Description: VPC ID where to deploy
+    Type: AWS::EC2::VPC::Id
+
+
+Resources:
+
+
+  SGALBInternal:
+    Type: "AWS::EC2::SecurityGroup""
+    Properties:
+      GroupName: !Join
+        - '-'
+        - - 'bax'
+          - Ref: Env
+          - Ref: Appname
+          - Ref: SubAppname
+          - 'alb'
+          - 'int'
+          - 'sg'
+      GroupDescription: !Sub
+        - ${Env} ${SubAppname} internal alb Security Group
+        - { Env: !Ref Env, App: !Ref Appname }
+      SecurityGroupIngress:
+      ########################## Baxter Network
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: 10.0.0.0/8
+      - IpProtocol: tcp
+        FromPort: 443
+        ToPort: 443
+        CidrIp: 10.0.0.0/8
+      - IpProtocol: tcp
+        FromPort: 8443
+        ToPort: 8443
+        CidrIp: 10.0.0.0/8
+      ########################## Baxter VPN
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: 172.16.0.0/12
+      - IpProtocol: tcp
+        FromPort: 443
+        ToPort: 443
+        CidrIp: 172.16.0.0/12
+      - IpProtocol: tcp
+        FromPort: 8443
+        ToPort: 8443
+        CidrIp: 172.16.0.0/12
+      ########################## vPCs in Braine
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: 159.198.79.0/24
+      - IpProtocol: tcp
+        FromPort: 443
+        ToPort: 443
+        CidrIp: 159.198.79.0/24
+      - IpProtocol: tcp
+        FromPort: 8443
+        ToPort: 8443
+        CidrIp: 159.198.79.0/24
+      ########################## vPCs in Boulder
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: 159.198.132.0/22
+      - IpProtocol: tcp
+        FromPort: 443
+        ToPort: 443
+        CidrIp: 159.198.132.0/22
+      - IpProtocol: tcp
+        FromPort: 8443
+        ToPort: 8443
+        CidrIp: 159.198.132.0/22
+      ########################## Xen Desktops hosted in Nossegem
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: 159.198.20.0/22
+      - IpProtocol: tcp
+        FromPort: 443
+        ToPort: 443
+        CidrIp: 159.198.20.0/22
+      - IpProtocol: tcp
+        FromPort: 8443
+        ToPort: 8443
+        CidrIp: 159.198.20.0/22
+      ########################## Autorabbit fix
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: 159.198.18.0/16
+      - IpProtocol: tcp
+        FromPort: 443
+        ToPort: 443
+        CidrIp: 159.198.18.0/16
+      - IpProtocol: tcp
+        FromPort: 8443
+        ToPort: 8443
+        CidrIp: 159.198.18.0/16
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: 159.198.81.0/24
+      - IpProtocol: tcp
+        FromPort: 443
+        ToPort: 443
+        CidrIp: 159.198.81.0/24
+      - IpProtocol: tcp
+        FromPort: 8443
+        ToPort: 8443
+        CidrIp: 159.198.81.0/24
+      SecurityGroupEgress:
+      - IpProtocol: -1
+        FromPort: '0'
+        ToPort: '65535'
+        CidrIp: 0.0.0.0/0
+      VpcId:
+        Ref: VpcID
+
+
+Outputs:
+
+
+  SGALBInternal:
+    Description: 'SWP Internal App Load Balancer Security Group'
+    Value: !GetAtt SGALBInternal.GroupId
+    Export:
+      Name: !Join [ "-", [ !Ref "AWS::StackName", "jira-alb-int-sg-id" ] ]

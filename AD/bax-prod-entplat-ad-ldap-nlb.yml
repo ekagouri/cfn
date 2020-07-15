@@ -1,0 +1,162 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Create the LDAP(s) load balancer infrastructure
+Metadata:
+  'AWS::CloudFormation::Interface':
+    ParameterGroups:
+      - Label:
+          default: Load balancer Configuration
+        Parameters:
+          - Appname
+          - Appid
+          - Owner
+          - Costcenter
+          - Environment
+          - VpcId
+          - PvtSubnetId
+          - TargetPortLDAP
+          - TargetPortLDAPS
+Parameters:
+  Environment:
+    Description: Environment type
+    Type: String
+    Default: prod
+    AllowedValues:
+      - sandbox
+      - dev
+      - test
+      - prod
+    ConstraintDescription: 'must specify sandbox, dev, test, prod'
+  Appid:
+    Description: The application ID
+    Type: String
+    Default: 237669
+  Appname:
+    Description: The application ID
+    Type: String
+    Default: ad
+  Costcenter:
+      Description: Application costcenter.
+      Type: String
+      Default: 1001700938
+  Owner:
+      Description: Application owner.
+      Type: String
+      Default: GLBL.SHS.Directory.Services.Baxter@baxter.com
+  VpcId:
+    Type: 'AWS::EC2::VPC::Id'
+    Description: Select VPC/
+  PvtSubnetId:
+    Type: 'List<AWS::EC2::Subnet::Id>'
+    Description: Select at two subnets in your selected VPC.
+  ListenerPortLDAP:
+    Type: Number
+    Description: Load balancer listener port LDAP
+    Default: 389
+  ListenerPortLDAPS:
+    Type: Number
+    Description: Load balancer listener port
+    Default: 636
+
+  SslCertificateInt:
+    Type: String
+    Description: Ssl certificate arn for listener
+    Default:  arn:aws:acm:us-east-2:737965399985:certificate/fbb741d0-2370-488d-a1c8-79e42542826e
+  TargetPortLDAP:
+    Type: String
+    Description: Target Port LDAP
+    Default: 389
+  TargetPortLDAPS:
+    Type: String
+    Description: Target Port LDAPS
+    Default: 636
+
+Resources:
+
+  NLBLoadBalancer:
+    Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
+    Properties:
+      Name: !Join [ '', ['bax-', !Ref Environment, !Ref Appname, '-nlb']]
+      Scheme: internal
+      Subnets: !Ref PvtSubnetId
+      Type: "network"
+      Tags:
+        - Key: Appname
+          Value: !Ref Appname
+        - Key: Env
+          Value: !Ref Environment
+        - Key: Costcenter
+          Value: !Ref Costcenter
+        - Key: Name
+          Value: !Join [ '', ['bax-', !Ref Environment, !Ref Appname, '-nlb']]
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Appid
+          Value: !Ref Appid
+
+  NLBTargetGroupLDAP:
+    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+    Properties:
+      TargetType: ip
+      Port: !Ref TargetPortLDAP
+      Protocol: TCP
+      VpcId: !Ref VpcId
+
+  NLBTargetGroupLDAPS:
+    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+    Properties:
+      TargetType: ip
+      Port: !Ref TargetPortLDAPS
+      Protocol: TCP
+      VpcId: !Ref VpcId
+
+  NLBListenerLDAP:
+    Type: 'AWS::ElasticLoadBalancingV2::Listener'
+    DependsOn:
+      - NLBTargetGroupLDAP
+      - NLBLoadBalancer
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref NLBTargetGroupLDAP
+      LoadBalancerArn: !Ref NLBLoadBalancer
+      Port: !Ref ListenerPortLDAP
+      Protocol: TCP
+
+  NLBListenerLDAPS:
+    Type: 'AWS::ElasticLoadBalancingV2::Listener'
+    DependsOn:
+      - NLBTargetGroupLDAPS
+      - NLBLoadBalancer
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref NLBTargetGroupLDAPS
+      LoadBalancerArn: !Ref NLBLoadBalancer
+      Port: !Ref ListenerPortLDAPS
+      Protocol: TCP
+Outputs:
+  Loadbalancer:
+    Description: Load balancer dns endpoint details
+    Value: !Join
+      - ''
+      - - !GetAtt
+          - NLBLoadBalancer
+          - DNSName
+    Export:
+      Name: !Sub '${AWS::StackName}-LoadBalancer'
+  LoadbalancerArn:
+    Description: Load balancer arn details
+    Value: !Ref NLBLoadBalancer
+    Export:
+      Name: !Sub '${AWS::StackName}-LoadbalancerArn'
+  LDAPListenerArn:
+    Description: Listener arn details LDAP
+    Value: !Ref NLBListenerLDAP
+    Export:
+      Name: !Sub '${AWS::StackName}-ListenerArnLDAP'
+  LDAPSListenerArn:
+    Description: Listener arn details LDAPS
+    Value: !Ref NLBListenerLDAPS
+    Export:
+      Name: !Sub '${AWS::StackName}-ListenerArnLDAPS'
+  
