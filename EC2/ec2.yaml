@@ -4,5 +4,14 @@ Resources:
   MyEC2Instance:
     Type: AWS::EC2::Instance
     Properties:
-      ImageId: ami-0ff8a91507f77f867
-      InstanceType: t1.micro
+      ImageId: ami-08f3d892de259504d
+      InstanceType: t2.micro
+      KeyName: AWSDevOpsKey
+      Monitoring: true
+      SecurityGroupIds:
+        - sg-131e6a5b
+      SubnetId: subnet-5d0f1162
+      Tags:
+        -
+          Key: Name
+          Value: Web Server1
