@@ -4,20 +4,30 @@ Resources:
   MyEC2Instance:
     Type: AWS::EC2::Instance
     Properties:
-      BlockDeviceMappings:
-        -
-          DeviceName: "/dev/sda1"
-          Ebs:
-            VolumeSize: 10
-            VolumeType: gp2
       ImageId: ami-08f3d892de259504d
       InstanceType: t2.micro
       KeyName: AWSDevOpsKey
       Monitoring: true
       SecurityGroupIds:
         - sg-131e6a5b
-      SubnetId: subnet-5d0f1162
+      SubnetId: subnet-f729a3bd
+      Volumes:
+        -
+          Device: "/dev/sdf"
+          VolumeId: !Ref LogVolume
       Tags:
         -
           Key: Name
-          Value: Web Server1
+          Value: Web Server 3
+
+  LogVolume:
+    Type: AWS::EC2::Volume
+    DeletionPolicy: Snapshot
+    Properties:
+      AvailabilityZone: us-east-1a
+      Size: 10
+      Tags:
+        -
+          Key: Name
+          Value: web-log-volume
+      VolumeType: gp2
