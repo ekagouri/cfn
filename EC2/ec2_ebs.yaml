@@ -1,0 +1,23 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: A simple EC2 instance
+Resources:
+  MyEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      BlockDeviceMappings:
+        -
+          DeviceName: "/dev/sda1"
+          Ebs:
+            VolumeSize: 10
+            VolumeType: gp2
+      ImageId: ami-08f3d892de259504d
+      InstanceType: t2.micro
+      KeyName: AWSDevOpsKey
+      Monitoring: true
+      SecurityGroupIds:
+        - sg-131e6a5b
+      SubnetId: subnet-5d0f1162
+      Tags:
+        -
+          Key: Name
+          Value: Web Server1
