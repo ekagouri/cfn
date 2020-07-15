@@ -1,0 +1,77 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:  
+  ## Security group for WebInstance enabling port 80
+  ## from all IP addresses
+  WebSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: GLBL LINUX SG
+      GroupName: GLBL-LINUX-SG     
+      VpcId: vpc-55b28b2e
+      SecurityGroupIngress:
+        -
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+ 
+  ## EC2 Instance with a custom security group
+  ## and a larger root instance device
+  ## and an externally created EBS volume attached
+  WebInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      BlockDeviceMappings:
+        -
+          DeviceName: "/dev/sda1"
+          Ebs:
+            VolumeSize: 8
+            VolumeType: gp2
+      ImageId: ami-08f3d892de259504d
+      InstanceType: t2.micro
+      KeyName: AWSDevOpsKey
+      Monitoring: true
+      #SecurityGroupIds:
+        #- sg-131e6a5b
+      SecurityGroupIds:
+        - !Ref WebSecurityGroup
+      SubnetId: subnet-f729a3bd
+      Tags:
+        -
+          Key: Name
+          Value: webserver
+      Volumes:
+        -
+          Device: "/dev/sdf"
+          VolumeId: !Ref LogVolume
+  
+  ## EBS Volume for storing web logs
+  LogVolume:
+    Type: AWS::EC2::Volume
+    DeletionPolicy: Snapshot
+    Properties:
+      AvailabilityZone: us-east-1a
+      Size: 10
+      Tags:
+        -
+
+
+
+
+
+
+
+
+
+
+
+          Key: Name
+          Value: web-log-volume
+      VolumeType: gp2
+
+  ## Attach EIP to the instance
+  ## WebElasticIp:
+  ##   Type: AWS::EC2::EIP
+  ##   Properties:
+  ##     InstanceId: !Ref WebInstance
+  ##     Domain: vpc

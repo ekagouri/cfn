@@ -1,17 +1,17 @@
-AWSTemplateFormatVersion: '2010-09-09'
-Description: A simple EC2 instance
+AWSTemplateFormatVersion: "2010-09-09"
 Resources:
-  MyEC2Instance:
+  WebInstance:
     Type: AWS::EC2::Instance
     Properties:
       ImageId: ami-08f3d892de259504d
       InstanceType: t2.micro
       KeyName: AWSDevOpsKey
-      Monitoring: true
       SecurityGroupIds:
         - sg-131e6a5b
       SubnetId: subnet-f729a3bd
-      Tags:
-        -
-          Key: Name
-          Value: Web Server1
+
+  WebElasticIp:
+    Type: AWS::EC2::EIP
+    Properties:
+      InstanceId: !Ref WebInstance
+      Domain: vpc

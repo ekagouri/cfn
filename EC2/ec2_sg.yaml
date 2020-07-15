@@ -21,4 +21,4 @@ Resources:
       KeyName: AWSDevOpsKey
       SecurityGroupIds:
         - !Ref WebSecurityGroup
-      SubnetId: subnet-5d0f1162
+      SubnetId: subnet-f729a3bd
