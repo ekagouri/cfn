@@ -54,17 +54,6 @@ Resources:
       Size: 10
       Tags:
         -
-
-
-
-
-
-
-
-
-
-
-
           Key: Name
           Value: web-log-volume
       VolumeType: gp2
