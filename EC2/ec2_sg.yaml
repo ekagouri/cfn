@@ -1,20 +1,24 @@
-AWSTemplateFormatVersion: '2010-09-09'
-Description: A simple EC2 instance
+AWSTemplateFormatVersion: "2010-09-09"
 Resources:
-  MyEC2Instance:
+  WebSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Web server 100
+      GroupName: web     
+      VpcId: vpc-55b28b2e
+      SecurityGroupIngress:
+        -
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+
+  WebInstance:
     Type: AWS::EC2::Instance
     Properties:
-        ImageId: ami-0ff8a91507f77f867
-        InstanceType: t1.micro
-
-    Type: AWS::EC2::SecurityGroup
-    Properties: 
-        GroupDescription: String
-        GroupName: String
-        SecurityGroupEgress: 
-        - Egress
-        SecurityGroupIngress: 
-        - Ingress
-        Tags: 
-        - Tag
-        VpcId: String
+      InstanceType: t2.micro
+      ImageId: ami-08f3d892de259504d
+      KeyName: AWSDevOpsKey
+      SecurityGroupIds:
+        - !Ref WebSecurityGroup
+      SubnetId: subnet-5d0f1162
