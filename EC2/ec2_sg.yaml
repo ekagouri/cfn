@@ -3,14 +3,29 @@ Resources:
   WebSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Web server 100
-      GroupName: web     
+      GroupDescription: Web server group
+      GroupName: web-server-group     
       VpcId: vpc-55b28b2e
       SecurityGroupIngress:
         -
           IpProtocol: tcp
           FromPort: 80
           ToPort: 80
+          CidrIp: 0.0.0.0/0
+        -
+          IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          CidrIp: 0.0.0.0/0
+        -
+          IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+        -
+          IpProtocol: tcp
+          FromPort: 8443
+          ToPort: 8443
           CidrIp: 0.0.0.0/0
 
   WebInstance:
@@ -19,6 +34,14 @@ Resources:
       InstanceType: t2.micro
       ImageId: ami-08f3d892de259504d
       KeyName: AWSDevOpsKey
+      Monitoring: true
       SecurityGroupIds:
         - !Ref WebSecurityGroup
       SubnetId: subnet-f729a3bd
+      Tags:
+        -
+          Key: Name
+          Value: Web Server 100
+        -
+          Key: Owner
+          Value: Eddie Kim
